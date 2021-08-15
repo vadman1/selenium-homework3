@@ -1,5 +1,6 @@
 package org.example.framework.pages;
 
+
 import org.openqa.selenium.support.FindBy;
 import org.example.framework.managers.DriverManager;
 import org.example.framework.managers.PageManager;
@@ -79,6 +80,23 @@ public class BasePage {
     }
 
 
+    /**
+     * Функция позволяющая производить scroll до любого элемента с помощью js со смещение
+     * Смещение задается количеством пикселей по вертикали и горизонтали, т.е. смещение до точки (x, y)
+     *
+     * @param element - веб-элемент странички
+     * @param x       - параметр координаты по горизонтали
+     * @param y       - параметр координаты по вертикали
+     * @see JavascriptExecutor
+     */
+    public WebElement scrollWithOffset(WebElement element, int x, int y) {
+        String code = "window.scroll(" + (element.getLocation().x + x) + ","
+                + (element.getLocation().y + y) + ");";
+        ((JavascriptExecutor) driverManager.getDriver()).executeScript(code, element, x, y);
+        return element;
+    }
+
+
 
     /**
      * Явное ожидание состояния clickable элемента
@@ -127,11 +145,5 @@ public class BasePage {
         scrollToElementJs(field);
         field.sendKeys(value);
     }
-
-
-    Product nintendoSwitch = new Product();
-
-    Product detroit = new Product();
-
 
 }

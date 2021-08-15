@@ -16,7 +16,6 @@ public class PageManager {
      */
     private static PageManager pageManager;
 
-    //объявить каждую страничку полем
 
     /**
      * Стартовая страничка

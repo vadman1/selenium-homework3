@@ -7,7 +7,6 @@ import static org.example.framework.utils.PropConst.IMPLICITLY_WAIT;
 import static org.example.framework.utils.PropConst.PAGE_LOAD_TIMEOUT;
 
 /**
- * @author Arkadiy_Alaverdyan
  * Класс для инициализации фреймворка
  */
 public class InitManager {

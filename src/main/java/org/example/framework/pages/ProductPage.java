@@ -1,11 +1,17 @@
 package org.example.framework.pages;
 
+import io.qameta.allure.Step;
+import org.example.framework.dataobject.Product;
+import org.example.framework.dataobject.datamanagers.DataManager;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ProductPage extends BasePage{
 
@@ -21,6 +27,9 @@ public class ProductPage extends BasePage{
     @FindBy(xpath = "//input[@value='1']/..")
     private WebElement guaranteeTwoYear;
 
+    @FindBy(xpath = "//div[@class='product-warranty__items']//span[@class='product-warranty__period']")
+    private List<WebElement> listGuarantee;
+
     @FindBy(xpath = "//button[text()='Купить']")
     private WebElement buyBtn;
 
@@ -33,56 +42,79 @@ public class ProductPage extends BasePage{
     @FindBy(xpath = "//h1[@data-product-title]")
     private WebElement dataProductTitle;
 
-    public ProductPage rememberNintendoSwitchPrice() {
+    @FindBy(xpath = "//span[@class='cart-link__badge']")
+    private WebElement cartLinkBadge;
+
+    @Step("Запоминаем цену товара {productName}")
+    public ProductPage rememberProductPrice(String productName) {
+
         int price = Integer.parseInt(productPrice.getText().replaceAll("[^0-9]", ""));
-        nintendoSwitch.setPrice(price);
+        Product product = new Product(productName, price);
+
+        DataManager.getDataManager().getProductList().add(product);
 
         return this;
     }
 
-    public ProductPage rememberNintendoSwitchPriceWithGuarantee() {
+    @Step("Запоминаем цену с гарантией товара {nameProduct}")
+    public ProductPage rememberProductPriceWithGuarantee(String nameProduct) {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[text()='цена изменена']")));
 
         int price = Integer.parseInt(productPriceWithGuarantee.getText().replaceAll("[^0-9]", ""));
-        nintendoSwitch.setPriceWithGuarantee(price);
+        DataManager.getDataManager().getProductByName(nameProduct).setPrice(price);
 
-        System.out.println(nintendoSwitch.getPrice());
-        System.out.println(nintendoSwitch.getPriceWithGuarantee());
 
         return this;
     }
 
-    public ProductPage rememberDetroitPrice() {
-        int price = Integer.parseInt(productPrice.getText().replaceAll("[^0-9]", ""));
-        detroit.setPrice(price);
-        System.out.println(detroit.getPrice());
 
-        return this;
-    }
+    @Step("Проверяем сумму корзины")
+    public ProductPage checkCartSum()  {
 
-    public ProductPage checkCartSum() throws InterruptedException {
-        Thread.sleep(1000);
+        AtomicReference<Integer> sum = new AtomicReference<>(0);
+        DataManager.getDataManager().getProductList().forEach(item -> {
+            sum.updateAndGet(v -> v + item.getPrice());
+        });
+
         int cartSum = Integer.parseInt(cartLink.getText().replaceAll("[^0-9]", ""));
 
-        int productsSum = nintendoSwitch.getPriceWithGuarantee() + detroit.getPrice();
-
-        Assertions.assertEquals(productsSum, cartSum, "Цены разные");
+        Assertions.assertEquals(sum.get(), cartSum, "Цены разные");
         return this;
     }
 
-    public ProductPage selectAdditionalGuarantee() {
+    @Step("Выбираем дополнительную гарантию {additionalGuarantee}")
+    public ProductPage selectAdditionalGuarantee(String additionalGuarantee) {
 
         guarantee.click();
-        guaranteeTwoYear.click();
+        for (WebElement itemGuarantee : listGuarantee) {
+            if(itemGuarantee.getText().contains(additionalGuarantee)) {
+                itemGuarantee.click();
+                return this;
+            }
+        }
+
+        Assertions.fail("Элемент не найден с такой гарантией " + additionalGuarantee);
 
         return this;
     }
 
+    @Step("Нажимаем на кнопку \"Купить\"")
     public ProductPage clickBuyBtn() {
         buyBtn.click();
+
+        wait.until(ExpectedConditions.visibilityOf(cartLinkBadge));
+
+        Product.setCountProduct(Product.getCountProduct() + 1);
+        wait.until(ExpectedConditions.textToBePresentInElement(cartLinkBadge, Product.getCountProduct() + ""));
+
+        Assertions.assertEquals(Product.getCountProduct() + "", cartLinkBadge.getText(),
+                "Количество товара в корзине и в классе Product разное");
+
+
         return this;
     }
 
+    @Step("Ищем товар {productName}")
     public ResultSearchPage searchProduct(String productName) {
         inputSearch.click();
 
@@ -92,16 +124,16 @@ public class ProductPage extends BasePage{
         return pageManager.getResultSearchPage();
     }
 
+    @Step("Переходим в корзину")
     public CartPage goToCart() {
         cartLink.click();
 
         return pageManager.getCartPage();
     }
 
-
+    @Step("Проверяем открытие страницы с товаром")
     public ProductPage checkOpenProductPage() {
-        Assertions.assertNotNull(dataProductTitle, "Мы находимся не на странице товара");
-
+        Assertions.assertTrue(dataProductTitle.isDisplayed(), "Мы находимся не на странице товара");
         return this;
     }
 

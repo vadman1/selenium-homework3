@@ -4,12 +4,16 @@ import org.example.framework.managers.DriverManager;
 import org.example.framework.managers.InitManager;
 import org.example.framework.managers.PageManager;
 import org.example.framework.managers.TestPropManager;
+import org.example.framework.utils.MyAllureListener;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.example.framework.utils.PropConst.BASE_URL;
 
+
+@ExtendWith(MyAllureListener.class )
 public class BaseTests {
 
     /**
@@ -39,4 +43,6 @@ public class BaseTests {
     public static void afterAll() {
         InitManager.quitFramework();
     }
+
+
 }
