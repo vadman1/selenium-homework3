@@ -120,7 +120,6 @@ public class CartPage extends BasePage {
                 }
                 Assertions.fail("У продукта не выбрана гарантия\n " +
                         "Ожидали, что у продукта будет выбрана гарантия " + nameGuarantee);
-                return;
             }
         });
         if(flag.get() == true) return this;

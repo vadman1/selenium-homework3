@@ -11,7 +11,7 @@ import org.openqa.selenium.TakesScreenshot;
 public class MyAllureListener extends AllureJunit5 implements AfterTestExecutionCallback {
 
     @Override
-    public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
+    public void afterTestExecution(ExtensionContext extensionContext) {
         if(extensionContext.getExecutionException().isPresent()){
             addScreenshot();
         }
